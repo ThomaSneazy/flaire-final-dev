@@ -1,4 +1,4 @@
-console.log("coucoulast");
+console.log("coucou github");
 gsap.registerPlugin(ScrollTrigger);
 
 //////////////////////NAVBAR LOGO COLOR CHANGE ON SCROLL///////////////////////
