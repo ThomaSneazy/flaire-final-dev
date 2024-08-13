@@ -883,101 +883,156 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 //////////////////////MARQUEE SCROLL EFFECT//////////////////////
-let tlMarquee = gsap.timeline({
-  scrollTrigger: {
-    trigger: ".section.is-marquee",
-    start: "top top",
-    end: "+=300%",
-    pin: true,
-    scrub: 1,
-    anticipatePin: 1,
-  },
-});
+function isMobile() {
+  return window.innerWidth <= 768;
+}
 
-let marqueeWrappers = gsap.utils.toArray(".marquee-wrapper");
+function initMarqueeAnimation() {
+  let marqueeWrappers = gsap.utils.toArray(".marquee-wrapper");
 
-marqueeWrappers.forEach((wrapper, index) => {
-  tlMarquee.from(
-    wrapper,
-    {
-      y: "100%",
-      opacity: 0,
-      ease: "power2.out",
-      duration: 3,
-    },
-    index * 1.5,
-  );
-});
+  if (isMobile()) {
+    marqueeWrappers.forEach((wrapper, index) => {
+      const direction = index % 2 === 0 ? -1 : 1;
+      const moveDistance = direction * 30;
 
-tlMarquee.addLabel("startMarquee", ">");
+      gsap.from(wrapper, {
+        y: "100%",
+        opacity: 0,
+        ease: "power2.out",
+        duration: 1,
+        scrollTrigger: {
+          trigger: wrapper,
+          start: "top bottom",
+          end: "top center",
+          scrub: true,
+        },
+      });
 
-marqueeWrappers.forEach((wrapper, index) => {
-  const direction = index % 2 === 0 ? -1 : 1;
-  const moveDistance = direction * 30;
-  tlMarquee.to(
-    wrapper,
-    {
-      x: `${moveDistance}%`,
-      ease: "none",
-      duration: 10,
-    },
-    "startMarquee",
-  );
+      gsap.to(wrapper, {
+        x: `${moveDistance}%`,
+        ease: "none",
+        scrollTrigger: {
+          trigger: ".section.is-marquee",
+          start: "top bottom",
+          end: "bottom top",
+          scrub: 1,
+        },
+      });
+    });
+  } else {
+    let tlMarquee = gsap.timeline({
+      scrollTrigger: {
+        trigger: ".section.is-marquee",
+        start: "top top",
+        end: "+=300%",
+        pin: true,
+        scrub: 1,
+        anticipatePin: 1,
+      },
+    });
+
+    marqueeWrappers.forEach((wrapper, index) => {
+      tlMarquee.from(
+        wrapper,
+        {
+          y: "100%",
+          opacity: 0,
+          ease: "power2.out",
+          duration: 3,
+        },
+        index * 1.5,
+      );
+    });
+
+    tlMarquee.addLabel("startMarquee", ">");
+
+    marqueeWrappers.forEach((wrapper, index) => {
+      const direction = index % 2 === 0 ? -1 : 1;
+      const moveDistance = direction * 30;
+      tlMarquee.to(
+        wrapper,
+        {
+          x: `${moveDistance}%`,
+          ease: "none",
+          duration: 10,
+        },
+        "startMarquee",
+      );
+    });
+  }
+}
+
+initMarqueeAnimation();
+
+window.addEventListener("resize", () => {
+  ScrollTrigger.getAll().forEach((st) => st.kill());
+  gsap.killTweensOf(".marquee-wrapper");
+  initMarqueeAnimation();
 });
 
 //////////////////////HORIZONTAL SCROLL//////////////////////
 
-const galleryContent = document.querySelector(".gallery__content");
-const galleryItems = gsap.utils.toArray(".gallery__item");
-const lastItem = document.querySelector(".gallery__item.is-last");
+function isDesktop() {
+  return window.innerWidth > 768;
+}
 
-const scrollTween = gsap.to(galleryContent, {
-  x: () => -(galleryContent.scrollWidth - document.documentElement.clientWidth),
-  ease: "none",
-  scrollTrigger: {
-    trigger: ".gallery-wrapper",
-    start: "top top",
-    end: () =>
-      `+=${galleryContent.scrollWidth - document.documentElement.clientWidth}`,
-    scrub: 1,
-    pin: true,
-    anticipatePin: 1,
-    invalidateOnRefresh: true,
-  },
-});
+function initGalleryAnimation() {
+  if (!isDesktop()) return;
 
-galleryItems.forEach((item, index) => {
-  if (!item.classList.contains("is-last")) {
-    const content = item.querySelector(".gallery__item-content");
+  const galleryContent = document.querySelector(".gallery__content");
+  const galleryItems = gsap.utils.toArray(".gallery__item");
+  const lastItem = document.querySelector(".gallery__item.is-last");
 
-    gsap.set(content, { filter: "blur(10px)" });
+  const scrollTween = gsap.to(galleryContent, {
+    x: () =>
+      -(galleryContent.scrollWidth - document.documentElement.clientWidth),
+    ease: "none",
+    scrollTrigger: {
+      trigger: ".gallery-wrapper",
+      start: "top top",
+      end: () =>
+        `+=${galleryContent.scrollWidth - document.documentElement.clientWidth}`,
+      scrub: 1,
+      pin: true,
+      anticipatePin: 1,
+      invalidateOnRefresh: true,
+    },
+  });
+
+  galleryItems.forEach((item) => {
+    if (!item.classList.contains("is-last")) {
+      const content = item.querySelector(".gallery__item-content");
+
+      gsap.set(content, { filter: "blur(10px)" });
+
+      ScrollTrigger.create({
+        trigger: item,
+        containerAnimation: scrollTween,
+        start: "left center",
+        end: "right center",
+        onEnter: () => gsap.to(content, { filter: "blur(0px)", duration: 0.5 }),
+        onLeave: () =>
+          gsap.to(content, { filter: "blur(10px)", duration: 0.5 }),
+        onEnterBack: () =>
+          gsap.to(content, { filter: "blur(0px)", duration: 0.5 }),
+        onLeaveBack: () =>
+          gsap.to(content, { filter: "blur(10px)", duration: 0.5 }),
+      });
+    }
+  });
+
+  if (lastItem) {
+    const orbs = lastItem.querySelectorAll(".orb-horizontal");
 
     ScrollTrigger.create({
-      trigger: item,
+      trigger: lastItem,
       containerAnimation: scrollTween,
-      start: "left center",
-      end: "right center",
-      onEnter: () => gsap.to(content, { filter: "blur(0px)", duration: 0.5 }),
-      onLeave: () => gsap.to(content, { filter: "blur(10px)", duration: 0.5 }),
-      onEnterBack: () =>
-        gsap.to(content, { filter: "blur(0px)", duration: 0.5 }),
-      onLeaveBack: () =>
-        gsap.to(content, { filter: "blur(10px)", duration: 0.5 }),
+      start: "left 80%",
+      end: "right 20%",
+      onEnter: () => animateOrbs(orbs),
+      onEnterBack: () => animateOrbs(orbs),
     });
   }
-});
-
-if (lastItem) {
-  const orbs = lastItem.querySelectorAll(".orb-horizontal");
-
-  ScrollTrigger.create({
-    trigger: lastItem,
-    containerAnimation: scrollTween,
-    start: "left 80%",
-    end: "right 20%",
-    onEnter: () => animateOrbs(orbs),
-    onEnterBack: () => animateOrbs(orbs),
-  });
 }
 
 function animateOrbs(orbs) {
@@ -994,6 +1049,14 @@ function animateOrbs(orbs) {
     },
   });
 }
+
+initGalleryAnimation();
+
+window.addEventListener("resize", () => {
+  ScrollTrigger.getAll().forEach((st) => st.kill());
+  gsap.killTweensOf("*");
+  initGalleryAnimation();
+});
 
 //////////////////////GSAP FADEUP LINEUP//////////////////////
 function isMobile() {
