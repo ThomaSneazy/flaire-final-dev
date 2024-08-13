@@ -1,4 +1,4 @@
-console.log("coucou github");
+console.log("Bonjourneau");
 gsap.registerPlugin(ScrollTrigger);
 
 //////////////////////NAVBAR LOGO COLOR CHANGE ON SCROLL///////////////////////
