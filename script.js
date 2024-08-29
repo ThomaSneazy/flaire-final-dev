@@ -1,6 +1,8 @@
 console.log("Bonjourneau");
 gsap.registerPlugin(ScrollTrigger);
 
+/////Last push//////
+
 //////////////////////NAVBAR LOGO COLOR CHANGE ON SCROLL///////////////////////
 const imgNav = document.querySelector(".img-nav");
 const bgWhiteElements = document.querySelectorAll(".bg-white");
